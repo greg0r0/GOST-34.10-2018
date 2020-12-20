@@ -14,28 +14,35 @@ namespace ECC {
     class EllipticCurve
     {
         /*
-            Elliptic curve:  y == x^3 + a*x+b (mod p)
+            Elliptic curve:  y^2 == x^3 + a*x+b (mod p)
         */
 
         private:
         T modulo;
         T a;
         T b;
-        T G_x;
+        ECC::EllipticPoint<T> G;
         T n;
         T h;
 
         public:
 
-        EllipticCurve(T _a, T _b, T _modulo) : a(_a), b(_b), modulo(_modulo), G_x(nullptr), n(nullptr), h(nullptr){}
+        EllipticCurve(T _a, T _b, T _modulo) : a(_a), b(_b), modulo(_modulo), G(nullptr), n(nullptr), h(nullptr){}
 
-        EllipticCurve(T _a, T _b, T _modulo, T _G_x, T _order, T _h) : a(_a), b(_b), modulo(_modulo), G_x(_G_x), n(_order), h(_h){}
-
-        void setG_x(T x_coord){
-            if (CheckPoint()){
-                this->G_x = x_coord;
+        EllipticCurve(T _a, T _b, T _modulo, T _G_x, T _G_y, T _order, T _h)
+        {
+            this->a = _a;
+            this->b = _b;
+            this->modulo = _modulo;
+            this->n=_order;
+            this->h=_h; 
+            ECC::EllipticPoint<T> point(_G_x, _G_y, _modulo, _a);
+            T left = boost::multiprecision::powm(point.getY(),2,_modulo);
+            T right = Util::Math<T>::mod(boost::multiprecision::powm(point.getX(), 3, _modulo) + Util::Math<T>::mod(_a*point.getX(), _modulo)+Util::Math<T>::mod(_b, _modulo), _modulo);
+            if (left==right){
+                this->G = point;
             } else {
-                throw -1;
+                throw "Incorrect point G: Point not on curve";
             }
         }
 
@@ -44,7 +51,25 @@ namespace ECC {
             this->n = order;
         }
 
-        bool CheckPoint(); //TODO: Point Class
+        ECC::EllipticPoint<T> getGeneratorPoint(){
+            return this->G;
+        }
+
+        bool CheckPoint(ECC::EllipticPoint<T> point){
+            if (point.is_in_infinity()){
+                return true;
+            }
+            T left = boost::multiprecision::powm(point.getY(),2,this->modulo);
+            T right = boost::multiprecision::powm(point.getX(), 3, this->modulo) + Util::Math<T>::mod(this->a*point.getX(), this->modulo)+Util::Math<T>::mod(this->b, this->modulo);
+            return (left == right);
+        }
+
+        bool CheckPoint(T x, T y){
+            ECC::EllipticPoint<T> point(x,y,this->modulo, this->a);
+            T left = boost::multiprecision::powm(point.getY(),2,this->modulo);
+            T right = boost::multiprecision::powm(point.getX(), 3, this->modulo) + Util::Math<T>::mod(this->a*point.getX(), this->modulo)+Util::Math<T>::mod(this->b, this->modulo);
+            return (left == right);
+        }
 
 
         std::string ToString(){
@@ -52,25 +77,44 @@ namespace ECC {
             ss << "y == x^3 + " << this->a << "*x + " << this->b << " (mod " << this->modulo << ")";
             return ss.str(); 
         }
+
+        std::pair< ECC::EllipticPoint<T> , ECC::EllipticPoint<T> > producePoint(T x)
+        {
+            T y = boost::multiprecision::powm(x, 3, this->modulo) + Util::Math<T>::mod(this->a*x, this->modulo)+Util::Math<T>::mod(this->b, this->modulo);
+            
+            std::pair<T,T> res_points = Util::Math<T>::getYfromX(y, this->modulo);
+            if (res_points.first == 0 && res_points.second == 0)
+            {
+                return std::pair< ECC::EllipticPoint<T> , ECC::EllipticPoint<T> >( ECC::EllipticPoint<T>(true), ECC::EllipticPoint<T>(true) );
+            } else {
+                return std::pair< ECC::EllipticPoint<T> , ECC::EllipticPoint<T> >( ECC::EllipticPoint<T>(x, res_points.first, this->modulo, this->a), ECC::EllipticPoint<T>(x, res_points.second, this->modulo, this->a) );
+            }
+        }
+
         
     };
 
     namespace StandartCurves
     {
         //Bitcoin Curve, J(E)=0
-        EllipticCurve<uint256_t> secp256k1(0,
-                                           7,
-                                           0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f_cppui,
-                                           0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798_cppui,
-                                           0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141_cppui,
-                                           1);
+        EllipticCurve<int1024_t> secp256k1(
+        /*a*/      0,
+        /*b*/      7,
+        /*mod*/    0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f_cppui,
+        /*G(x,y)*/ 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798_cppui, 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8_cppui,
+        /*n*/      0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141_cppui,
+        /*h*/      1
+        );
+                                            
         //J(E)!=0
-        EllipticCurve<uint256_t> secp256r1(0xffffffff00000001000000000000000000000000fffffffffffffffffffffffc_cppui,
-                                           0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b_cppui,
-                                           0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff_cppui,
-                                           0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296_cppui,
-                                           0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551_cppui,
-                                           1);
+        EllipticCurve<int1024_t> gost3410_p256(
+            7,
+            0x5FBFF498AA938CE739B8E022FBAFEF40563F6E6A3472FC2A514C0CE9DAE23B7E_cppui,
+            0x8000000000000000000000000000000000000000000000000000000000000431_cppui,
+            2,0x8E2A8A0E65147D4BD6316030E16D19C85C97F0A9CA267122B96ABBCEA7E8FC8_cppui,
+            0x8000000000000000000000000000000150FE8A1892976154C59CFC193ACCF5B3_cppui,
+            1
+        );
     }
 
 }
