@@ -174,6 +174,30 @@ namespace Util {
             return res;
         }
 
+        uint256_t convertArrToNumber_256(std::vector<unsigned char> arr)
+        {
+            assert( arr.size() == 32);
+            uint256_t res;
+            std::reverse(arr.begin(), arr.end());
+            for (int i = 0; i < arr.size(); i++)
+            {
+                res |= ((uint256_t)arr[i]<<(8*i));
+            } 
+            return res;
+        }
+
+        uint512_t convertArrToNumber_512(std::vector<unsigned char> arr)
+        {
+            assert( arr.size() == 64);
+            uint512_t res;
+            std::reverse(arr.begin(), arr.end());
+            for (int i = 0; i < arr.size(); i++)
+            {
+                res |= ((uint512_t)arr[i]<<(8*i));
+            } 
+            return res;
+        }
+
     };
 }
 
