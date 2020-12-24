@@ -4,6 +4,7 @@
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 
+using namespace boost::multiprecision;
 using namespace boost::multiprecision::literals;
 namespace Util {
 
