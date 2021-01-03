@@ -35,17 +35,11 @@ namespace Util {
             T res = a % p;
             return (res<0)?res+p:res;
         }
-        
+
         /*
-            compute y == a^x (mod p)
+            compute y == a^b (mod n)
             return y
         */
-        // static T pow_finite(T a, T x, T p){
-        //     T aa = (a>=0? ( a>=p ? a - p : a) :a + p);
-        //     T res = boost::multiprecision::powm(aa,x, p);
-        //     return p>0 ? res : res + p;
-        // }
-
         static T pow_finite(T a, T b, T n) {
             T x = 1, y = a;
             while (b > 0) {
