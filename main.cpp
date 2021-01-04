@@ -1,31 +1,30 @@
 #include <iostream>
+#include <fstream>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <cmath>
 #include <string>
 #include "./include/EllipricCurve.hpp"
 #include "./include/streebog.h"
 #include "./include/cpuinfo.h"
+#include "./include/GOST_34-10-2018.hpp"
 
 using namespace boost::multiprecision;
 using namespace boost::multiprecision::literals;
 
 
 
-int main(){
-    
-    unsigned char hash[512/8];
-    cppcrypto::streebog f(512);
-    f.init();
-    auto t = "Hello friend!";//reinterpret_cast<const unsigned char *>("1bcde12341");
-    f.update(reinterpret_cast<const unsigned char *>(t), strlen(t));
-    f.final(hash);
+int main(int argc, char* argv[]){
 
-    for (auto i: hash)
+    // Stage 1. Read file for signing    
+    std::ifstream fd(argv[1]);
+    std::stringstream buf;
+    if (fd)
     {
-        std::cout << std::hex << (int)i;
+        buf << fd.rdbuf();
     }
-    std::cout << std::endl;
+
+    std::cout << buf.str() << std::endl;
+
+
     return 0;
 }
-
-

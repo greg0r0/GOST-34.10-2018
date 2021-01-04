@@ -169,7 +169,9 @@ namespace Util {
             return res;
         }
 
-        uint256_t convertArrToNumber_256(std::vector<unsigned char> arr)
+    };
+
+    uint256_t convertArrToNumber_256(std::vector<unsigned char> arr)
         {
             assert( arr.size() == 32);
             uint256_t res;
@@ -178,22 +180,34 @@ namespace Util {
             {
                 res |= ((uint256_t)arr[i]<<(8*i));
             } 
+            
             return res;
         }
 
-        uint512_t convertArrToNumber_512(std::vector<unsigned char> arr)
+    uint512_t convertArrToNumber_512(std::vector<unsigned char> arr)
+    {
+        assert( arr.size() == 64);
+        uint512_t res;
+        std::reverse(arr.begin(), arr.end());
+        for (int i = 0; i < arr.size(); i++)
         {
-            assert( arr.size() == 64);
-            uint512_t res;
-            std::reverse(arr.begin(), arr.end());
-            for (int i = 0; i < arr.size(); i++)
-            {
-                res |= ((uint512_t)arr[i]<<(8*i));
-            } 
-            return res;
+            res |= ((uint512_t)arr[i]<<(8*i));
+        } 
+        return res;
+    }
+    //convert unsigned char to vector< unsigned char > 
+    template<int N>
+    std::vector<unsigned char> convertUCtoVUC(unsigned char s[])
+    {
+        std::vector<unsigned char> res;
+        //std::cout << s << std::endl;
+        for (int i = 0; i < N; i++)
+        {
+            res.push_back(s[i]);
         }
-
-    };
+        
+        return res;
+    }
 }
 
 #endif
