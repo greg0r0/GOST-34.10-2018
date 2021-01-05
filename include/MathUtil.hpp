@@ -1,6 +1,7 @@
 #ifndef UTIL_HPP
 #define UTIL_HPP
 
+#include <fstream>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 
@@ -207,6 +208,17 @@ namespace Util {
         }
         
         return res;
+    }
+
+    std::string readFile(char* filepath)
+    {
+        std::ifstream fd(filepath);
+        std::stringstream buf;
+        if (fd) { buf << fd.rdbuf(); }
+#ifdef DEBUG
+        std::cout << "[!] Data read:\n" << buf.str() << std::endl;
+#endif
+        return buf.str();
     }
 }
 

@@ -42,17 +42,24 @@ namespace ECC {
             if (left==right){
                 this->G = point;
             } else {
+                std::cout << "Incorrect point G: Point not on curve" << std::endl;
                 throw "Incorrect point G: Point not on curve";
             }
         }
 
-        void set_n(T order)
+        void setOrder(T order)
         {
             this->n = order;
         }
 
-        ECC::EllipticPoint<T> getGeneratorPoint(){
+        ECC::EllipticPoint<T> getGeneratorPoint()
+        {
             return this->G;
+        }
+
+        T getQ()
+        {
+            return this->n;
         }
 
         bool CheckPoint(ECC::EllipticPoint<T> point){

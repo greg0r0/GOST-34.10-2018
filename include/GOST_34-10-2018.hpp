@@ -17,13 +17,15 @@ namespace GOST_34_10_2018
             
             f.update(reinterpret_cast<const unsigned char *>(t), strlen(t));
             f.final(hash);
-            
+#ifdef DEBUG
+            std::cout << "[!] Hash 256bit" << std::endl;    
+            std::cout.fill('0');        
             for (auto i : hash)
             {
-                std::cout << std::hex << (int)i << " ";
+                std::cout << std::setw(2) << std::hex << (int)i << " ";
             }
-
             std::cout << std::endl;
+#endif
 
             return Util::convertArrToNumber_256( Util::convertUCtoVUC<256/8>(hash));
         }
@@ -34,17 +36,17 @@ namespace GOST_34_10_2018
             cppcrypto::streebog f(512);
             f.init();
             auto t = data.c_str();
-            std::cout << data.size() << std::endl;
             f.update(reinterpret_cast<const unsigned char *>(t), strlen(t));
             f.final(hash);
-
+#ifdef DEBUG
+            std::cout << "[!] Hash 512bit" << std::endl;
+            std::cout.fill('0');        
             for (auto i : hash)
             {
-                std::cout << std::hex << (int)i << " ";
+                std::cout << std::setw(2) << std::hex << (int)i << " ";
             }
-
             std::cout << std::endl;
-
+#endif
             return Util::convertArrToNumber_512( Util::convertUCtoVUC<512/8>(hash));
         }
     }
@@ -53,7 +55,7 @@ namespace GOST_34_10_2018
 
 
     template <typename T>
-    class Cipher
+    class Signer
     {
         private:
         ECC::EllipticCurve<T> curve;
