@@ -34,6 +34,15 @@ namespace ECC {
             this->a = _a;
             this->b = _b;
             this->modulo = _modulo;
+
+            T ab_check = Util::Math<T>::mod(4*boost::multiprecision::powm(_a,3, _modulo)+27*boost::multiprecision::powm(b,2,_modulo), _modulo);
+
+            if (ab_check == 0)
+            {
+                std::cout << "Bad a b parameters - it's singular curve" << std::endl;
+                throw "Incorrect point G: Point not on curve";
+            }
+
             this->n=_order;
             this->h=_h; 
             ECC::EllipticPoint<T> point(_G_x, _G_y, _modulo, _a);
