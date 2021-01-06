@@ -4,6 +4,9 @@
 #include <fstream>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <boost/random.hpp>
+#include <ctime>
+#include <cstdint>
 
 using namespace boost::multiprecision;
 using namespace boost::multiprecision::literals;
@@ -219,6 +222,20 @@ namespace Util {
         std::cout << "[!] Data read:\n" << buf.str() << std::endl;
 #endif
         return buf.str();
+    }
+
+    template<int N> //Bits
+    int1024_t genRandomNumber(int1024_t modulo)
+    {
+        assert( (N % 32) == 0);
+        int1024_t res(0);
+        for (int i = 0; i < N/32; i ++)
+        {
+            std::time_t now = std::time(0);
+            boost::random::mt19937 gen{static_cast<std::uint32_t>(now)};
+            res |= ((int1024_t)gen())<<(i*32);
+        }
+        return Util::Math<int1024_t>::mod(res, modulo);
     }
 }
 
