@@ -51,8 +51,37 @@ namespace GOST_34_10_2018
         }
     }
     
+    namespace Keys
+    {   
 
+        template<typename T>
+        class PublicKey
+        {
+            private:
+                ECC::EllipticPoint<T> key;
+            public:
+                PublicKey(ECC::EllipticPoint<T> point): key(point) {}
+                ECC::EllipticPoint<T> getKey() { return this->key;}
+        };
 
+        template<typename T>
+        class PrivateKey
+        {
+            private:
+                T key;
+            public:
+                PrivateKey(T n) : key(n) {}
+                T getKey() { return this->key;}
+        };
+
+    }
+
+    namespace Algorithms
+    {
+        //Return std::pair: first == PublicKey, second == PrivateKey
+        //GOST doesn't desccribe how user must gen keys - i just get random number
+        std::pair<!, !> genKeys()
+    }
 
     template <typename T>
     class Signer

@@ -10,6 +10,7 @@
 
 using namespace boost::multiprecision;
 using namespace boost::multiprecision::literals;
+typedef number<cpp_int_backend<2048, 2048, signed_magnitude, unchecked, void> > int2048_t;
 namespace Util {
 
     template <typename T>
@@ -18,16 +19,16 @@ namespace Util {
         class AffinePoint
         {
             public:
-                boost::multiprecision::int1024_t x;
-                boost::multiprecision::int1024_t y;
-                boost::multiprecision::int1024_t z;
+                int2048_t x;
+                int2048_t y;
+                int2048_t z;
             
-                //AffinePoint(boost::multiprecision::int1024_t _x, boost::multiprecision::int1024_t _y, boost::multiprecision::int1024_t _z) : x( _x), y(_y), z(_z) {}
+                //AffinePoint(boost::multiprecision::int2048_t _x, boost::multiprecision::int2048_t _y, boost::multiprecision::int2048_t _z) : x( _x), y(_y), z(_z) {}
                 AffinePoint(T _x, T _y, T _z)
                 {
-                    this->x = _x.template convert_to<boost::multiprecision::int1024_t>();
-                    this->y = _y.template convert_to<boost::multiprecision::int1024_t>();
-                    this->z = _z.template convert_to<boost::multiprecision::int1024_t>();
+                    this->x = _x.template convert_to<int2048_t>();
+                    this->y = _y.template convert_to<int2048_t>();
+                    this->z = _z.template convert_to<int2048_t>();
                 }
                 
         };
@@ -72,10 +73,10 @@ namespace Util {
             res.x = gcd(a,b), res.y = u, res.z = v 
         */
         static AffinePoint extended_gcd(T a, T b){
-            AffinePoint U(a.template convert_to<boost::multiprecision::int1024_t>(), 1, 0);
-            AffinePoint V(b.template convert_to<boost::multiprecision::int1024_t>(), 0, 1);
+            AffinePoint U(a.template convert_to<int2048_t>(), 1, 0);
+            AffinePoint V(b.template convert_to<int2048_t>(), 0, 1);
             while (V.x != 0){
-                boost::multiprecision::int1024_t q = U.x / V.x;
+                int2048_t q = U.x / V.x;
                 AffinePoint Tmp(U.x % V.x,  U.y - q * V.y, U.z - q*V.z);
                 U = V;
                 V = Tmp;
@@ -225,17 +226,17 @@ namespace Util {
     }
 
     template<int N> //Bits
-    int1024_t genRandomNumber(int1024_t modulo)
+    int2048_t genRandomNumber(int2048_t modulo)
     {
         assert( (N % 32) == 0);
-        int1024_t res(0);
+        int2048_t res(0);
         for (int i = 0; i < N/32; i ++)
         {
             std::time_t now = std::time(0);
             boost::random::mt19937 gen{static_cast<std::uint32_t>(now)};
-            res |= ((int1024_t)gen())<<(i*32);
+            res |= ((int2048_t)gen())<<(i*32);
         }
-        return Util::Math<int1024_t>::mod(res, modulo);
+        return Util::Math<int2048_t>::mod(res, modulo);
     }
 }
 

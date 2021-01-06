@@ -113,7 +113,7 @@ namespace ECC {
     namespace StandartCurves
     {
         //Bitcoin Curve, J(E)=0
-        EllipticCurve<int1024_t> secp256k1(
+        EllipticCurve<int2048_t> secp256k1(
         /*a*/      0,
         /*b*/      7,
         /*mod*/    0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f_cppui,
@@ -123,7 +123,7 @@ namespace ECC {
         );
                                             
         //J(E)!=0
-        EllipticCurve<int1024_t> gost3410_p256(
+        EllipticCurve<int2048_t> gost3410_p256(
             7,
             0x5FBFF498AA938CE739B8E022FBAFEF40563F6E6A3472FC2A514C0CE9DAE23B7E_cppui,
             0x8000000000000000000000000000000000000000000000000000000000000431_cppui,
