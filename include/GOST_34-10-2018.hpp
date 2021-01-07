@@ -122,6 +122,7 @@ namespace GOST_34_10_2018
                 e = 1;
             }
             #ifdef DEBUG
+            std::cout << "[!] DEBUG (check): hash=0x"<<std::hex << hash_sum << std::endl;
             std::cout << "[!] DEBUG (check): e=0x"<<std::hex << e << std::endl;
             #endif 
 
@@ -149,7 +150,7 @@ namespace GOST_34_10_2018
             // Step 5. Compute Point C=z1*P + z2*Q (P in generator of elliptic group, Q is pubkey)
             ECC::EllipticPoint<int2048_t> new_C = (z1*curve.getGeneratorPoint()) + (z2*pub.getKey());
             #ifdef DEBUG
-            std::cout << "[!] DEBUG (create): C="<< new_C.ToString() << std::endl;
+            std::cout << "[!] DEBUG (check): C="<< new_C.ToString() << std::endl;
             #endif
 
             // Step 6. Check sign!
@@ -180,6 +181,7 @@ namespace GOST_34_10_2018
                 e = 1;
             }
             #ifdef DEBUG
+            std::cout << "[!] DEBUG (create): hash=0x"<<std::hex << hash_sum << std::endl;
             std::cout << "[!] DEBUG (create): e=0x"<<std::hex << e << std::endl;
             #endif
             
