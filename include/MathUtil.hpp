@@ -7,6 +7,7 @@
 #include <boost/random.hpp>
 #include <ctime>
 #include <cstdint>
+ #include <sys/stat.h>
 
 using namespace boost::multiprecision;
 using namespace boost::multiprecision::literals;
@@ -214,6 +215,11 @@ namespace Util {
         return res;
     }
 
+    bool is_file_exist(const std::string& name) {
+    struct stat buffer;   
+    return (stat (name.c_str(), &buffer) == 0); 
+    }
+
     std::string readFile(char* filepath)
     {
         std::ifstream fd(filepath);
@@ -229,13 +235,83 @@ namespace Util {
     {
         assert( (bits % 32) == 0);
         int2048_t res(0);
+        std::time_t now = std::time(0);
+        boost::random::mt19937 gen{static_cast<std::uint32_t>(now)};
         for (int i = 0; i < bits/32; i ++)
         {
-            std::time_t now = std::time(0);
-            boost::random::mt19937 gen{static_cast<std::uint32_t>(now)};
             res |= ((int2048_t)gen())<<(i*32);
         }
         return Util::Math<int2048_t>::mod(res, modulo);
+    }
+
+    int2048_t readData_256b(std::string filepath, int pos=0)
+    {
+        unsigned char arr[32]; // 256 bit == 32*8 bit == 32 byte
+        std::ifstream fd(filepath, std::ios::binary);
+        fd.seekg(pos);  
+        if (fd)
+        {   
+            for (int i = 0; i < 32; i++)
+            {
+                fd.read((char*)&arr[i], 1);
+            }
+
+        }
+        fd.close();
+        return convertArrToNumber_256(convertUCtoVUC<256/8>(arr));
+    }
+
+    void writeData_256b(int2048_t data, std::string filepath, int pos=0)
+    {
+        std::fstream fd;
+        if (is_file_exist(filepath))
+        {
+            fd.open(filepath, std::ios::in|std::ios::out|std::ios::binary);
+        } 
+        else 
+        {
+            fd.open(filepath, std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc);
+        }
+        fd.seekg(pos);  
+        if (fd)
+        {   
+            for (int i = 0; i < 32; i++)
+            {
+                fd << (unsigned char)( (data >> (8*(31-i))) & 0xff);
+            }
+        }
+        fd.close();
+    }
+
+    int2048_t readData_512b(std::string filepath, int pos=0)
+    {
+        unsigned char arr[64]; // 256 bit == 32*8 bit == 32 byte
+        std::ifstream fd(filepath, std::ios::binary);
+        fd.seekg(pos);  
+        if (fd)
+        {   
+            for (int i = 0; i < 64; i++)
+            {
+                fd.read((char*)&arr[i], 1);
+            }
+
+        }
+        fd.close();
+        return convertArrToNumber_256(convertUCtoVUC<512/8>(arr));
+    }
+
+    void writeData_512b(int2048_t data, std::string filepath, int pos=0)
+    {
+        std::fstream fd(filepath, std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc);
+        fd.seekg(pos);  
+        if (fd)
+        {   
+            for (int i = 0; i < 64; i++)
+            {
+                fd << (unsigned char)( (data >> (8*(63-i))) & 0xff);
+            }
+        }
+        fd.close();
     }
 }
 

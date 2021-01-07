@@ -26,6 +26,7 @@ namespace ECC {
         T h;
 
         public:
+        EllipticCurve() {}
 
         EllipticCurve(T _a, T _b, T _modulo) : a(_a), b(_b), modulo(_modulo), G(nullptr), n(nullptr), h(nullptr){}
 

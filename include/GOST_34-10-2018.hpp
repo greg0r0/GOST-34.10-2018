@@ -98,7 +98,9 @@ namespace GOST_34_10_2018
             assert(bits == 256 || bits == 512);
             int2048_t d = Util::genRandomNumber(curve.getQ(), bits);
             ECC::EllipticPoint<int2048_t> Q = d*curve.getGeneratorPoint();
-
+            #ifdef DEBUG
+            std::cout << "[!] DEBUG (genkeys)\nd=0x"<<std::hex<<d<<std::endl<<"Q="<<Q.ToString()<<std::endl;
+            #endif
             return std::pair< Types::PublicKey<int2048_t>, Types::PrivateKey<int2048_t> >(Types::PublicKey<int2048_t>(Q), Types::PrivateKey<int2048_t>(d));
         }
 
