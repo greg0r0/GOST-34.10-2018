@@ -221,13 +221,13 @@ namespace Util {
     return (stat (name.c_str(), &buffer) == 0); 
     }
 
-    std::string readFile(char* filepath)
+    std::string readFile(std::string filepath)
     {
         std::ifstream fd(filepath);
         std::stringstream buf;
         if (fd) { buf << fd.rdbuf(); }
 #ifdef DEBUG
-        std::cout << "[!] Data read:\n" << buf.str() << std::endl;
+        std::cout << "[!] Data read:\n" << buf.str().size() << std::endl;
 #endif
         return buf.str();
     }
@@ -298,12 +298,20 @@ namespace Util {
 
         }
         fd.close();
-        return convertArrToNumber_256(convertUCtoVUC<512/8>(arr));
+        return convertArrToNumber_512(convertUCtoVUC<512/8>(arr));
     }
 
     void writeData_512b(int2048_t data, std::string filepath, int pos=0)
     {
-        std::fstream fd(filepath, std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc);
+        std::fstream fd;
+        if (is_file_exist(filepath))
+        {
+            fd.open(filepath, std::ios::in|std::ios::out|std::ios::binary);
+        } 
+        else 
+        {
+            fd.open(filepath, std::ios::in|std::ios::out|std::ios::binary|std::ios::trunc);
+        }
         fd.seekg(pos);  
         if (fd)
         {   
