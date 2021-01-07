@@ -224,13 +224,12 @@ namespace Util {
 #endif
         return buf.str();
     }
-
-    template<int N> //Bits
-    int2048_t genRandomNumber(int2048_t modulo)
+    
+    int2048_t genRandomNumber(int2048_t modulo, int bits)
     {
-        assert( (N % 32) == 0);
+        assert( (bits % 32) == 0);
         int2048_t res(0);
-        for (int i = 0; i < N/32; i ++)
+        for (int i = 0; i < bits/32; i ++)
         {
             std::time_t now = std::time(0);
             boost::random::mt19937 gen{static_cast<std::uint32_t>(now)};
