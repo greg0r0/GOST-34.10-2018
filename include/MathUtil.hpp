@@ -7,7 +7,8 @@
 #include <boost/random.hpp>
 #include <ctime>
 #include <cstdint>
- #include <sys/stat.h>
+#include <random>
+#include <sys/stat.h>
 
 using namespace boost::multiprecision;
 using namespace boost::multiprecision::literals;
@@ -236,7 +237,7 @@ namespace Util {
         assert( (bits % 32) == 0);
         int2048_t res(0);
         std::time_t now = std::time(0);
-        boost::random::mt19937 gen{static_cast<std::uint32_t>(now)};
+        boost::random::mt19937 gen{ std::random_device()() };
         for (int i = 0; i < bits/32; i ++)
         {
             res |= ((int2048_t)gen())<<(i*32);
