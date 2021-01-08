@@ -72,6 +72,16 @@ namespace ECC {
             return this->n;
         }
 
+        T getModulo()
+        {
+            return this->modulo;
+        }
+
+        T get_a()
+        {
+            return this->a;
+        }
+
         bool CheckPoint(ECC::EllipticPoint<T> point){
             if (point.is_in_infinity()){
                 return true;

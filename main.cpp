@@ -45,7 +45,7 @@ int main(int argc, const char* argv[]){
     std::string mode; // mode - create sign, check sign, gen keys
     try
     {
-        boost::program_options::options_description desc{"ECDSA GOST 34.10-2018. George Zaytsev.\nOptions"};
+        boost::program_options::options_description desc{"[~] GOST 34.10-2018.\n\tRussian Eliptic Curve Digital Signature Algorithm.\n\tBy George Zaytsev, 2020.\nOptions"};
         desc.add_options()
             ("help,i", "Show this menu")
             ("mode,m", boost::program_options::value<std::string>(&mode), "Select mode: Create, Check, Genkeys")
@@ -65,7 +65,8 @@ int main(int argc, const char* argv[]){
         check_desc.add_options()
             ("input,I", boost::program_options::value<std::string>(), "Input file for checking")
             ("public-key", boost::program_options::value<std::string>(), "Input file with public key")
-            ("read-mode", boost::program_options::value<std::string>(), "Read mode: file, join.\n\t[!] join mode read bytes of digital signature from input file.");
+            ("read-mode", boost::program_options::value<std::string>(), "Read mode: file, join.\n\t[!] join mode read bytes of digital signature from input file and erase them.")
+            ("signature", boost::program_options::value<std::string>(), "Specify file with digital signature. For `join` read mode.");
 
         boost::program_options::options_description genkey_desc{"Generate keys options"};
         genkey_desc.add_options()
@@ -144,21 +145,26 @@ int main(int argc, const char* argv[]){
 void create(const boost::program_options::variables_map& vm, ECC::EllipticCurve<int2048_t> curve, int bits)
 {
     std::string input_file, input_key;
-    if (vm.count("input"))
-    {
-        input_file = vm["input"].as<std::string>();
-    } 
-    else
-    {
-        throw "Must specify input file.";
-    }
-    if (vm.count("private-key"))
-    {
-         input_key = vm["private-key"].as<std::string>();
-    } 
-    else
-    {
-        throw "Must specify file with private key.";
+    try{
+        if (vm.count("input"))
+        {
+            input_file = vm["input"].as<std::string>();
+        } 
+        else
+        {
+            throw "Must specify input file.";
+        }
+        if (vm.count("private-key"))
+        {
+            input_key = vm["private-key"].as<std::string>();
+        } 
+        else
+        {
+            throw "Must specify file with private key.";
+        }   
+    } catch (const std::string& ex) {
+        std::cerr << ex << std::endl;
+        return;
     }
     std::string data = Util::readFile(input_file);
     int2048_t key;
@@ -210,14 +216,143 @@ void create(const boost::program_options::variables_map& vm, ECC::EllipticCurve<
         std::fstream in_end(input_file, std::ios::in |std::ios::out | std::ios::ate | std::ios::binary);
         in_end.write("gost", 4);
         in_end.close();
-        std::cout << "[+] Sign Created. Digital signature stored if input file. Last " << std::dec <<4+bits/8 << " bytes."<< std::endl;
+        std::cout << "[+] Sign Created. Digital signature stored if input file. Last " << std::dec <<4+2*bits/8 << " bytes."<< std::endl;
     }
 }
 
 
 void check(const boost::program_options::variables_map& vm, ECC::EllipticCurve<int2048_t> curve, int bits)
 {
-    std::cout << "Not implemented." << std::endl;
+    std::string input_file, input_key;
+    try {
+        if (vm.count("input"))
+        {
+            input_file = vm["input"].as<std::string>();
+        } 
+        else
+        {
+            throw "Must specify input file.";
+        }
+        if (vm.count("public-key"))
+        {
+            input_key = vm["public-key"].as<std::string>();
+        } 
+        else
+        {
+            throw "Must specify file with private key.";
+        }
+    } catch (const std::string& ex) {
+        std::cerr << ex << std::endl;
+        return;
+    }
+
+    // we need to read signature+'gost' and erase them from input file.
+    std::string mode;
+    if (vm.count("read-mode"))
+    {
+        mode = vm["read-mode"].as<std::string>();
+    }
+    else 
+    {
+        mode = "file";
+    }
+
+    if (mode == "join")
+    {
+        std::string data = Util::readFile(input_file);
+        int sz = data.size();
+        #ifdef DEBUG
+        std::cout << "[!] DEBUG. Readed file len="<<std::dec<<sz<<std::endl;
+        #endif
+        bool flag_is_gost_signature = false;
+        if (data.substr(data.size()-4) == "gost")
+            flag_is_gost_signature = true;
+        else
+            std::cout << "[!] Doesn't found token of signature." << std::endl;
+        #ifdef DEBUG
+            std::cout<< "[!] DEBUG (check-read): Last 4 bytes of file: " << data.substr(data.size()-4) << std::endl; 
+        #endif
+        data.erase(data.size()-4-2*(bits/8)); //delete last 68/132 bytes of signature
+
+        int2048_t r,s,qx,qy;
+        if (bits == 256)
+        {
+            r  = Util::readData_256b(input_file, sz-4-2*bits/8);
+            s  = Util::readData_256b(input_file, sz-4-bits/8);
+            qx = Util::readData_256b(input_key, 0);
+            qy = Util::readData_256b(input_key, bits/8);
+        } else {
+            r  = Util::readData_512b(input_file, sz-4-2*bits/8);
+            s  = Util::readData_512b(input_file, sz-4-bits/8);\
+            qx = Util::readData_512b(input_key, 0);
+            qy = Util::readData_512b(input_key, bits/8);
+        }
+        #ifdef DEBUG
+        std::cout << "[!] DEBUG (check) Readed:\nr=0x"<<std::hex<<r<<"\ns=0x"<<s<<"\nQx=0x"<<qx<<"\nQy=0x"<<qy<<std::endl;
+        #endif
+        GOST_34_10_2018::Types::Sign<int2048_t> sign(r,s);
+        ECC::EllipticPoint<int2048_t> Q(qx,qy, curve.getModulo(), curve.get_a());
+        GOST_34_10_2018::Types::PublicKey<int2048_t> pubkey(Q);
+        if (flag_is_gost_signature && GOST_34_10_2018::Algorithms::checkSign(data, sign, pubkey, curve, bits))
+        {
+            std::cout << "[+] Digital signature is correct." << std::endl;
+        } 
+        else
+        {
+            std::cout << "[-] Digital signature is incorrect." << std::endl;
+        }
+
+    }
+    else
+    {
+        std::string sig;
+        if (vm.count("signature"))
+        {
+            sig = vm["signature"].as<std::string>();
+        }
+        else 
+        {
+            std::cerr << "Please specify file with signature." <<std::endl;
+            return;
+        }
+
+        std::string data = Util::readFile(input_file);
+        #ifdef DEBUG
+        std::cout << "[!] DEBUG. Readed file len="<<std::dec<<data.size()<<std::endl;
+        #endif
+
+        int2048_t r,s,qx,qy;
+        if (bits == 256)
+        {
+            r  = Util::readData_256b(sig, 0);
+            s  = Util::readData_256b(sig, bits/8);
+            qx = Util::readData_256b(input_key, 0);
+            qy = Util::readData_256b(input_key, bits/8);
+        } else {
+            r  = Util::readData_512b(sig, 0);
+            s  = Util::readData_512b(sig, bits/8);
+            qx = Util::readData_512b(input_key, 0);
+            qy = Util::readData_512b(input_key, bits/8);
+        }
+        #ifdef DEBUG
+        std::cout << "[!] DEBUG (check) Readed:\nr=0x"<<std::hex<<r<<"\ns=0x"<<s<<"\nQx=0x"<<qx<<"\nQy=0x"<<qy<<std::endl;
+        #endif
+        GOST_34_10_2018::Types::Sign<int2048_t> sign(r,s);
+        ECC::EllipticPoint<int2048_t> Q(qx,qy, curve.getModulo(), curve.get_a());
+        GOST_34_10_2018::Types::PublicKey<int2048_t> pubkey(Q);
+        if (GOST_34_10_2018::Algorithms::checkSign(data, sign, pubkey, curve, bits))
+        {
+            std::cout << "[+] Digital signature is correct." << std::endl;
+            //now delete sig
+            std::ofstream new_data(input_file, std::ios::binary);
+            new_data << data;
+            new_data.close();
+        } 
+        else
+        {
+            std::cout << "[-] Digital signature is incorrect." << std::endl;
+        }
+    }
 }
 
 

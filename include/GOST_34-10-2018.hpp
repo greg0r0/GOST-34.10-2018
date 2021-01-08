@@ -61,6 +61,7 @@ namespace GOST_34_10_2018
                 ECC::EllipticPoint<T> key;
             public:
                 PublicKey(ECC::EllipticPoint<T> point): key(point) {}
+                PublicKey(T qx, T qy) : key(ECC::EllipticPoint<T>(qx,qy)) {}
                 ECC::EllipticPoint<T> getKey() { return this->key;}
         };
 
