@@ -27,27 +27,12 @@ void list_curves();
 
 int main(int argc, const char* argv[]){
 
-
-    // ECC::EllipticCurve<int2048_t> cr = ECC::StandartCurves::gost3410_p512; 
-    // std::string data = Util::readFile(argv[1]);
-    
-    // auto keys = GOST_34_10_2018::Algorithms::genKeys(cr, 512);
-    // GOST_34_10_2018::Types::Sign<int2048_t> sign = GOST_34_10_2018::Algorithms::createSign(data, keys.second, cr, 512);
-
-    // if (GOST_34_10_2018::Algorithms::checkSign(data, sign, keys.first, cr, 512))
-    // {
-    //     std::cout << "ok" << std::endl;
-    // } else {
-    //     std::cout << "ne ok" << std::endl;
-    // }
-    // return 0;
-
     std::string mode; // mode - create sign, check sign, gen keys
     try
     {
         boost::program_options::options_description desc{"[~] GOST 34.10-2018.\n\tRussian Eliptic Curve Digital Signature Algorithm.\n\tBy George Zaytsev, 2020.\nOptions"};
         desc.add_options()
-            ("help,i", "Show this menu")
+            ("help,h", "Show this menu")
             ("mode,m", boost::program_options::value<std::string>(&mode), "Select mode: Create, Check, Genkeys")
             ("bits,b", boost::program_options::value<int>(), "Length of digital signature. Possible value: 256, 512 bits. 256 by default")
             ("curve,c", boost::program_options::value<std::string>(), "Select curve. gost3410_p256 by default.")
