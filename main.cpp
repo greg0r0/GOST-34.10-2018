@@ -1,6 +1,3 @@
-//TODO: makefile ._.
-//g++ main.cpp sources/cpuinfo.cpp sources/streebog.cpp sources/crypto_hash.cpp sources/gost3411-2012-sse2.c sources/gost3411-2012-sse41.c -lboost_program_options -o ECC && ./ECC /tmp/kek.txt
-
 #include <iostream>
 
 #include <string>

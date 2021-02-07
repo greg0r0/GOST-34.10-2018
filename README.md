@@ -1,5 +1,12 @@
 # GOST-34.10-2018
 
+## Compile
+
+* Need boost
+
+`g++ main.cpp sources/cpuinfo.cpp sources/streebog.cpp sources/crypto_hash.cpp sources/gost3411-2012-sse2.c sources/gost3411-2012-sse41.c -lboost_program_options -o ECC`
+
+TODO: makefile ._.
 
 ## Usage
 ```
