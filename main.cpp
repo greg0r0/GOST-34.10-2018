@@ -30,7 +30,7 @@ int main(int argc, const char* argv[]){
     std::string mode; // mode - create sign, check sign, gen keys
     try
     {
-        boost::program_options::options_description desc{"[~] GOST 34.10-2018.\n\tRussian Eliptic Curve Digital Signature Algorithm.\n\tImplementation By George Zaytsev, 2020.\nOptions"};
+        boost::program_options::options_description desc{"[~] GOST 34.10-2018\n\tRussian Eliptic Curve Digital Signature Algorithm.\n\tImplementation By George Zaytsev, 2020.\nOptions"};
         desc.add_options()
             ("help,h", "Show this menu")
             ("mode,m", boost::program_options::value<std::string>(&mode), "Select mode: Create, Check, Genkeys")
