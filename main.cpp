@@ -275,12 +275,20 @@ void check(const boost::program_options::variables_map& vm, ECC::EllipticCurve<i
         #ifdef DEBUG
         std::cout << "[!] DEBUG (check) Readed:\nr=0x"<<std::hex<<r<<"\ns=0x"<<s<<"\nQx=0x"<<qx<<"\nQy=0x"<<qy<<std::endl;
         #endif
+        
         GOST_34_10_2018::Types::Sign<int2048_t> sign(r,s);
+        
         ECC::EllipticPoint<int2048_t> Q(qx,qy, curve.getModulo(), curve.get_a());
+        
         GOST_34_10_2018::Types::PublicKey<int2048_t> pubkey(Q);
+        
         if (flag_is_gost_signature && GOST_34_10_2018::Algorithms::checkSign(data, sign, pubkey, curve, bits))
         {
             std::cout << "[+] Digital signature is correct." << std::endl;
+             //now delete sig
+            std::ofstream new_data(input_file, std::ios::binary);
+            new_data << data;
+            new_data.close();
         } 
         else
         {
@@ -328,10 +336,6 @@ void check(const boost::program_options::variables_map& vm, ECC::EllipticCurve<i
         if (GOST_34_10_2018::Algorithms::checkSign(data, sign, pubkey, curve, bits))
         {
             std::cout << "[+] Digital signature is correct." << std::endl;
-            //now delete sig
-            std::ofstream new_data(input_file, std::ios::binary);
-            new_data << data;
-            new_data.close();
         } 
         else
         {
